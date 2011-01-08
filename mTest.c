@@ -1,5 +1,6 @@
 #include "mTest.h"
 #include <stdio.h>
+#include <math.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -22,16 +23,32 @@ void addToTable(void* exp, testFunc func)
         printf("TestTable is full\n");
 }
 
-int run_eq(struct Expect* e)
+int runIntEq(void* e)
 {
-    if (e->expected == e->actual)
+    struct ExpectInt* exp = (struct ExpectInt*)e;
+    if (exp->expected == exp->actual)
     {
-        printf("Expectation %s : PASS\n\n", e->name);
+        printf("Expectation %s : PASS\n\n", exp->name);
         return TRUE;
     }
     else
     {
-        printf("Expectation %s : FAIL\nExpected = %d\nActual = %d\n\n", e->name, e->expected, e->actual);
+        printf("Expectation %s : FAIL\nExpected = %d\nActual = %d\n\n", exp->name, exp->expected, exp->actual);
+        return FALSE;
+    }
+}
+
+int runFloatEq(void* e)
+{
+    struct ExpectFloat* exp = (struct ExpectFloat*)e;
+    if (fabs(exp->expected - exp->actual) <= exp->error)
+    {
+        printf("Expectation %s : PASS\n\n", exp->name);
+        return TRUE;
+    }
+    else
+    {
+        printf("Expectation %s : FAIL\nExpected = %f\nActual = %f\n\n", exp->name, exp->expected, exp->actual);
         return FALSE;
     }
 }

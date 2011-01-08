@@ -11,15 +11,15 @@ int add(int a, int b)
     return a + b;
 }
 
-int sub(int a, int b)
+double sub(double a, double b)
 {
-    return a + b;
+    return a - b;
 }
 
 int main()
 {
-    EXPECT_EQ(5, add(1, 4));
-    EXPECT_EQ(1, add(1, 3));
+    EXPECT_INT_EQ(5, add(1, 4));
+    EXPECT_FLOAT_EQ(2, sub(3, 1), 0.001);
 
     RUNTEST;
     return 0;

@@ -3,14 +3,22 @@
 
 #define TESTMAX 10
 
-struct Expect
+struct ExpectInt
 {
     int expected;
     int actual;
     char* name;
 };
 
-typedef int (* testFunc)(struct Expect* exp);
+struct ExpectFloat
+{
+    double expected;
+    double actual;
+    double error;
+    char* name;
+};
+
+typedef int (* testFunc)(void* exp);
 
 struct TestTable
 {
@@ -22,17 +30,28 @@ extern struct TestTable table[TESTMAX];
 
 void addToTable(void* exp, testFunc func);
 
-int run_eq(struct Expect* e);
+int runIntEq(void* e);
+int runFloatEq(void* e);
 
 
-#define EXPECT_EQ(EXPECTED, ACTUAL) \
-struct Expect exp_##EXPECTED; \
+#define EXPECT_INT_EQ(EXPECTED, ACTUAL) \
+struct ExpectInt exp_##EXPECTED; \
 exp_##EXPECTED.name = #EXPECTED; \
 exp_##EXPECTED.expected = EXPECTED; \
 exp_##EXPECTED.actual = ACTUAL; \
 do \
 { \
-    addToTable(&exp_##EXPECTED, run_eq);\
+    addToTable(&exp_##EXPECTED, runIntEq);\
+} while(0)
+
+#define EXPECT_FLOAT_EQ(EXPECTED, ACTUAL, ERROR) \
+struct ExpectFloat exp_##EXPECTED; \
+exp_##EXPECTED.name = #EXPECTED; \
+exp_##EXPECTED.expected = EXPECTED; \
+exp_##EXPECTED.actual = ACTUAL; \
+do \
+{ \
+    addToTable(&exp_##EXPECTED, runFloatEq);\
 } while(0)
 
 
