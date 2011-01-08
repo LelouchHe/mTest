@@ -2,3 +2,4 @@ bin/
 obj/
 unittest.*
 test.i
+.*.swp

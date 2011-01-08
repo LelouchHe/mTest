@@ -3,9 +3,6 @@
 
 #define TESTMAX 10
 
-#define TRUE 1
-#define FALSE 0
-
 struct Expect
 {
     int expected;
@@ -25,28 +22,18 @@ extern struct TestTable table[TESTMAX];
 
 void addToTable(void* exp, testFunc func);
 
+int run_eq(struct Expect* e);
+
 
 #define EXPECT_EQ(EXPECTED, ACTUAL) \
 struct Expect exp_##EXPECTED; \
 exp_##EXPECTED.name = #EXPECTED; \
 exp_##EXPECTED.expected = EXPECTED; \
 exp_##EXPECTED.actual = ACTUAL; \
- \
-int run_##EXPECTED(struct Expect* e) \
+do \
 { \
-    if (e->expected == e->actual) \
-    { \
-        printf("Expectation %s : PASS\n\n", e->name); \
-        return TRUE; \
-    } \
-    else \
-    { \
-        printf("Expectation %s : FAIL\nExpected = %d\nActual = %d\n\n", e->name, e->expected, e->actual); \
-        return FALSE; \
-    } \
-} \
- \
-addToTable(&exp_##EXPECTED, run_##EXPECTED);
+    addToTable(&exp_##EXPECTED, run_eq);\
+} while(0)
 
 
 #define RUNTEST \
@@ -57,9 +44,5 @@ do \
         table[i].func(table[i].exp);\
 } while(0)
 
-
-
-#undef TRUE
-#undef FALSE
 
 #endif // MTEST_H_INCLUDED
