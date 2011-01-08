@@ -1,8 +1,8 @@
 #ifndef MTEST_H_INCLUDED
 #define MTEST_H_INCLUDED
 
-#define TESTMAX 10
 
+int runIntEq(void* e);
 struct ExpectInt
 {
     int expected;
@@ -10,6 +10,7 @@ struct ExpectInt
     char* name;
 };
 
+int runFloatEq(void* e);
 struct ExpectFloat
 {
     double expected;
@@ -20,23 +21,26 @@ struct ExpectFloat
 
 typedef int (* testFunc)(void* exp);
 
-struct TestTable
+struct Item
 {
     void* exp;
     testFunc func;
 };
 
-extern struct TestTable table[TESTMAX];
+struct TestTable
+{
+    struct Item* items;
+    int num;
+    int cur;
+};
+
 
 void addToTable(void* exp, testFunc func);
-
-int runIntEq(void* e);
-int runFloatEq(void* e);
 
 
 #define EXPECT_INT_EQ(EXPECTED, ACTUAL) \
 struct ExpectInt exp_##EXPECTED; \
-exp_##EXPECTED.name = #EXPECTED; \
+exp_##EXPECTED.name = "IntEq "#EXPECTED; \
 exp_##EXPECTED.expected = EXPECTED; \
 exp_##EXPECTED.actual = ACTUAL; \
 do \
@@ -46,7 +50,7 @@ do \
 
 #define EXPECT_FLOAT_EQ(EXPECTED, ACTUAL, ERROR) \
 struct ExpectFloat exp_##EXPECTED; \
-exp_##EXPECTED.name = #EXPECTED; \
+exp_##EXPECTED.name = "FloatEq "#EXPECTED; \
 exp_##EXPECTED.expected = EXPECTED; \
 exp_##EXPECTED.actual = ACTUAL; \
 do \
@@ -55,12 +59,24 @@ do \
 } while(0)
 
 
-#define RUNTEST \
+#define INITTEST() \
+do \
+{ \
+    table = (struct TestTable*)malloc(sizeof (struct TestTable)); \
+    table->cur = 0; \
+    table->num = 20; \
+    table->items = (struct Item*)malloc(sizeof (struct Item) * table->num); \
+} while (0)
+
+
+#define RUNTEST() \
 do \
 { \
     int i = 0; \
-    for (i = 0; i < TESTMAX && table[i].exp != NULL; i++) \
-        table[i].func(table[i].exp);\
+    for (i = 0; i < table->cur; i++) \
+        table->items[i].func(table->items[i].exp); \
+    free(table->items); \
+    free(table); \
 } while(0)
 
 

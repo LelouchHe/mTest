@@ -1,7 +1,8 @@
-#include "mTest.h"
 #include <stdio.h>
+#include <stdlib.h>
 
-#define TESTMAX 10
+#include "mTest.h"
+
 
 #define TRUE 1
 #define FALSE 0
@@ -16,12 +17,16 @@ double sub(double a, double b)
     return a - b;
 }
 
+struct TestTable* table;
+
 int main()
 {
+    INITTEST();
+
     EXPECT_INT_EQ(5, add(1, 4));
     EXPECT_FLOAT_EQ(2, sub(3, 1), 0.001);
 
-    RUNTEST;
+    RUNTEST();
     return 0;
 }
 

@@ -5,21 +5,17 @@
 #define TRUE 1
 #define FALSE 0
 
-struct TestTable table[TESTMAX];
+extern struct TestTable* table;
 
 void addToTable(void* exp, testFunc func)
 {
-    int i;
-    for (i = 0; i < TESTMAX; i++)
+    if (table->cur < table->num)
     {
-        if (table[i].exp == NULL)
-        {
-            table[i].exp = exp;
-            table[i].func = func;
-            break;
-        }
+        table->items[table->cur].exp = exp;
+        table->items[table->cur].func = func;
+        table->cur++;
     }
-    if (i == TESTMAX)
+    else
         printf("TestTable is full\n");
 }
 
