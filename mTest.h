@@ -1,13 +1,13 @@
 #ifndef MTEST_H_INCLUDED
 #define MTEST_H_INCLUDED
 
+#define TESTMAX 10
 
 int runIntEq(void* e);
 struct ExpectInt
 {
     int expected;
     int actual;
-    char* name;
 };
 
 int runFloatEq(void* e);
@@ -16,66 +16,100 @@ struct ExpectFloat
     double expected;
     double actual;
     double error;
-    char* name;
 };
 
 typedef int (* testFunc)(void* exp);
 
-struct Item
+
+struct Expect
 {
-    void* exp;
+    struct Expect* next;
     testFunc func;
+    void* exp;
+};
+
+struct TestCase
+{
+    struct Expect* expHead;
+    struct TestCase* next;
+    int num;
+    const char* suiteName;
+    const char* caseName;
 };
 
 struct TestTable
 {
-    struct Item* items;
+    struct TestCase* tcHead;
+    struct TestCase* curCase;
     int num;
-    int cur;
 };
 
-
-void addToTable(void* exp, testFunc func);
-
-
-#define EXPECT_INT_EQ(EXPECTED, ACTUAL) \
-struct ExpectInt exp_##EXPECTED; \
-exp_##EXPECTED.name = "IntEq "#EXPECTED; \
-exp_##EXPECTED.expected = EXPECTED; \
-exp_##EXPECTED.actual = ACTUAL; \
+#define TEST(SUITE, CASE) \
 do \
 { \
-    addToTable(&exp_##EXPECTED, runIntEq);\
+    struct TestCase* pTc = (struct TestCase*)malloc(sizeof (*pTc)); \
+    pTc->expHead = NULL; \
+    pTc->num = 0; \
+    pTc->suiteName = #SUITE; \
+    pTc->caseName = #CASE; \
+    addToTable(pTc); \
+} while (0);
+
+#define EXPECT_INT_EQ(EXPECTED, ACTUAL) \
+do \
+{ \
+    struct ExpectInt* exp = (struct ExpectInt*)malloc(sizeof (*exp)); \
+    exp->expected = EXPECTED; \
+    exp->actual = ACTUAL; \
+    addToCase(exp, runIntEq);\
 } while(0)
 
 #define EXPECT_FLOAT_EQ(EXPECTED, ACTUAL, ERROR) \
-struct ExpectFloat exp_##EXPECTED; \
-exp_##EXPECTED.name = "FloatEq "#EXPECTED; \
-exp_##EXPECTED.expected = EXPECTED; \
-exp_##EXPECTED.actual = ACTUAL; \
 do \
 { \
-    addToTable(&exp_##EXPECTED, runFloatEq);\
+    struct ExpectFloat* exp = (struct ExpectFloat*)malloc(sizeof (*exp)); \
+    exp->expected = EXPECTED; \
+    exp->actual = ACTUAL; \
+    exp->error = ERROR; \
+    addToCase(exp, runFloatEq);\
 } while(0)
+
 
 
 #define INITTEST() \
 do \
 { \
-    table = (struct TestTable*)malloc(sizeof (struct TestTable)); \
-    table->cur = 0; \
-    table->num = 20; \
-    table->items = (struct Item*)malloc(sizeof (struct Item) * table->num); \
+    table = (struct TestTable*)malloc(sizeof (*table)); \
+    table->tcHead = NULL; \
+    table->curCase = NULL; \
+    table->num = 0; \
 } while (0)
 
 
 #define RUNTEST() \
 do \
 { \
-    int i = 0; \
-    for (i = 0; i < table->cur; i++) \
-        table->items[i].func(table->items[i].exp); \
-    free(table->items); \
+    struct TestCase* pCase; \
+    struct Expect* pExp; \
+    for (table->curCase = table->tcHead; table->curCase != NULL; table->curCase = table->curCase->next) \
+    { \
+        pCase = table->curCase; \
+        for (pExp = pCase->expHead; pExp != NULL; pExp = pExp->next) \
+            pExp->func(pExp->exp); \
+    } \
+    \
+    for (pCase = table->tcHead; pCase != NULL; ) \
+    { \
+        for (pExp = pCase->expHead; pExp != NULL; ) \
+        { \
+            pExp = pCase->expHead->next; \
+            free(pCase->expHead); \
+            pCase->expHead = pExp; \
+        } \
+        pCase = table->tcHead->next; \
+        free(table->tcHead); \
+        table->tcHead = pCase; \
+    } \
     free(table); \
 } while(0)
 
