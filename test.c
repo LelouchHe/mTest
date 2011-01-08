@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "mTest.h"
+#include "mTestTable.h"
+#include "mTestCase.h"
+#include "mTestExpect.h"
+#include "mMarco.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -15,6 +18,8 @@ double sub(double a, double b)
 {
     return a - b;
 }
+
+typedef int (* testFunc)(void* exp);
 
 struct TestTable* table;
 void addToTable(struct TestCase* pTc);
