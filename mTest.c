@@ -13,10 +13,7 @@ void addToTable(void* exp, testFunc func)
         {
             table[i].exp = exp;
             table[i].func = func;
+            break;
         }
     }
-    if (i == TESTMAX)
-        printf("TestTable is full\n");
-    else
-        printf("TestTable is set up\n");
 }
