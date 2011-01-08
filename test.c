@@ -37,6 +37,20 @@ int main()
         EXPECT_FLOAT_EQ(2, sub(3, 1), 0.001);
     }
 
+    TEST(Suite, Case)
+    {
+        EXPECT_INT_EQ(5, add(1, 4));
+        EXPECT_INT_EQ(5, 5);
+        EXPECT_FLOAT_EQ(2, sub(3, 1), 0.001);
+    }
+
+    TEST(Suite, CaseFuck)
+    {
+        EXPECT_INT_EQ(5, add(1, 4));
+        EXPECT_INT_EQ(5, 5);
+        EXPECT_FLOAT_EQ(2, sub(3, 1), 0.001);
+    }
+
     RUNTEST();
     return 0;
 }
