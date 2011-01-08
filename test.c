@@ -1,6 +1,11 @@
 #include "mTest.h"
 #include <stdio.h>
 
+#define TESTMAX 10
+
+#define TRUE 1
+#define FALSE 0
+
 int add(int a, int b)
 {
     return a + b;

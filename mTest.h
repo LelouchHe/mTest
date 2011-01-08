@@ -1,6 +1,8 @@
 #ifndef MTEST_H_INCLUDED
 #define MTEST_H_INCLUDED
 
+#define TESTMAX 10
+
 #define TRUE 1
 #define FALSE 0
 
@@ -19,7 +21,7 @@ struct TestTable
     testFunc func;
 };
 
-extern struct TestTable* table;
+extern struct TestTable table[TESTMAX];
 
 void addToTable(void* exp, testFunc func);
 
@@ -34,11 +36,12 @@ int run_##EXPECTED(struct Expect* e) \
 { \
     if (e->expected == e->actual) \
     { \
-        printf("Expectation %s : PASS", e->name); \
+        printf("Expectation %s : PASS\n\n", e->name); \
         return TRUE; \
+    } \
     else \
     { \
-        printf("Expectation %s : FAIL\nExpected = %d\nActual = %d\b", e->name, e->expected, e->actual); \
+        printf("Expectation %s : FAIL\nExpected = %d\nActual = %d\n\n", e->name, e->expected, e->actual); \
         return FALSE; \
     } \
 } \
@@ -50,8 +53,8 @@ addToTable(&exp_##EXPECTED, run_##EXPECTED);
 do \
 { \
     int i = 0; \
-    for (i = 0; i < TESTMAX && TestTable[i].exp != NULL; i++) \
-        TestTable[i].func(TestTable[i].exp);\
+    for (i = 0; i < TESTMAX && table[i].exp != NULL; i++) \
+        table[i].func(table[i].exp);\
 } while(0)
 
 
