@@ -7,4 +7,6 @@ This is really hard.
 
 But I learn something new about Macro in C, which is dark and funny.
 
-
+Bugs:
+    1.how can it be outside the main itself but still can be controled
+    2.how can each expect/case/suite get what it need from its parent

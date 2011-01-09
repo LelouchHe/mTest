@@ -6,6 +6,14 @@
 
 //case重名已经可以处理了..哈哈哈..该suite了...
 
+
+#define TEST_BEG \
+void init() \
+{
+
+#define TEST_END \
+}
+
 #define TEST(SUITE, CASE) \
 do \
 { \
@@ -43,6 +51,7 @@ do \
 do \
 { \
     table = tt_malloc(); \
+    init(); \
 } while (0)
 
 

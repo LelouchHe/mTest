@@ -1,8 +1,6 @@
 #ifndef MTESTTABLE_H_INCLUDED
 #define MTESTTABLE_H_INCLUDED
 
-typedef void(* initfunc)();
-
 struct TestCase;
 struct TestSuite;
 
@@ -11,7 +9,7 @@ struct TestTable
     struct TestSuite* tsHead;
     struct TestSuite* curSuite;
     int num;
-    initfunc* inifHead;
+    void(* initHead)();
     int iniNum;
 };
 
