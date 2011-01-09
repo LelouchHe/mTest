@@ -8,6 +8,7 @@
 #include "mTestExpect.h"
 
 extern struct TestTable* table;
+extern void init();
 
 void TEST(const char* suiteName, const char* caseName)
 {
@@ -38,6 +39,7 @@ void EXPECT_FLOAT_EQ(const double expected, const double actual, const double er
 void INITTEST()
 {
     table = tt_malloc();
+    init();
 }
 void RUNTEST()
 {

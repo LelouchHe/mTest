@@ -9,8 +9,9 @@ struct TestTable
     struct TestSuite* tsHead;
     struct TestSuite* curSuite;
     int num;
-    void(* initHead)();
-    int iniNum;
+    void(* init)();
+    void(* beforeHead)();
+    void(* afterHead)();
 };
 
 struct TestTable* tt_malloc();

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 //to be tested, usually in another file
+/*
 int add(int a, int b)
 {
     return a + b;
@@ -11,26 +12,35 @@ double sub(double a, double b)
 {
     return a - b;
 }
+*/
 
 #include "mTest.h"
+#include "mUtil.h"
+
 
 struct TestTable* table;
 
 TEST_BEG
 
-TEST("Suite", "Case")
+BEFORE_CASE(Suite, Case1)
 {
-    EXPECT_INT_EQ(5, add(1, 4));
-    EXPECT_INT_EQ(5, 5);
-    EXPECT_FLOAT_EQ(2, sub(3, 1), 0.001);
+    int i = 0;
+    STORE(i);
 }
 
-TEST("Suite", "CaseFuck")
+AFTER_CASE(Suite, Case1)
 {
-    int a = add(1, 4);
-    EXPECT_INT_EQ(4, a);
-    EXPECT_INT_EQ(2, 5);
-    EXPECT_FLOAT_EQ(2, sub(3, 1), 0.001);
+    printf("leave my sweet suite");
+}
+
+TEST("Suite", "Case1");
+{
+    EXPECT_INT_EQ(5, 5);
+}
+
+TEST("Suite", "Case2");
+{
+    EXPECT_INT_EQ(4, 5);
 }
 
 TEST_END

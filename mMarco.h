@@ -14,6 +14,14 @@ void init() \
 #define TEST_END \
 }
 
+#define BEFORE_CASE(SUITE, CASE)
+
+#define AFTER_CASE(SUITE, CASE)
+
+#define STORE(VAR)
+
+/*
+
 #define TEST(SUITE, CASE) \
 do \
 { \
@@ -47,6 +55,8 @@ do \
 
 
 
+
+
 #define INITTEST() \
 do \
 { \
@@ -62,5 +72,6 @@ do \
     tt_free(table); \
 } while(0)
 
+*/
 
 #endif // MMARCO_H_INCLUDED
