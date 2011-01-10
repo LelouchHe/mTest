@@ -51,12 +51,15 @@ void tc_addToCase(struct TestCase* pTc, void* exp, testFunc func)
 
 void tc_run(struct TestCase* pTc)
 {
+/*
     struct Expect* pExp = pTc->expHead;
     while (pExp != NULL)
     {
         pExp->func(pExp->exp);
         pExp = pExp->next;
     }
+*/
+    pTc->func();
 }
 
 void tc_merge(struct TestCase* pTo, struct TestCase* pFrom)
@@ -80,4 +83,9 @@ void tc_merge(struct TestCase* pTo, struct TestCase* pFrom)
 int tc_isSameCase(struct TestCase* pA, struct TestCase* pB)
 {
     return !strcmp(pA->caseName, pB->caseName);
+}
+
+void tc_addExpFunc(struct TestCase* pTc, void (* func)())
+{
+    pTc->func = func;
 }

@@ -15,35 +15,19 @@ double sub(double a, double b)
 */
 
 #include "mTest.h"
-#include "mUtil.h"
 
 
-struct TestTable* table;
-
-TEST_BEG
-
-BEFORE_CASE(Suite, Case1)
-{
-    int i = 0;
-    STORE(i);
-}
-
-AFTER_CASE(Suite, Case1)
-{
-    printf("leave my sweet suite");
-}
-
-TEST("Suite", "Case1");
+TEST(Suite1, Case1)
 {
     EXPECT_INT_EQ(5, 5);
 }
 
-TEST("Suite", "Case2");
+
+TEST(Suite2, Case2)
 {
     EXPECT_INT_EQ(4, 5);
 }
 
-TEST_END
 
 int main()
 {

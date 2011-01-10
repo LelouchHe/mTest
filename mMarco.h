@@ -1,27 +1,9 @@
 #ifndef MMARCO_H_INCLUDED
 #define MMARCO_H_INCLUDED
 
-//每个TEST出现必定有一个case,但是不一定有suite,suite的出现需要判断重名或者其他现象,由上层决定
-//特定的case绝对不允许重名,但是suite可以么?
-
-//case重名已经可以处理了..哈哈哈..该suite了...
-
-
-#define TEST_BEG \
-void init() \
-{
-
-#define TEST_END \
-}
-
-#define BEFORE_CASE(SUITE, CASE)
-
-#define AFTER_CASE(SUITE, CASE)
-
-#define STORE(VAR)
+//绝对不允许重名
 
 /*
-
 #define TEST(SUITE, CASE) \
 do \
 { \
@@ -30,8 +12,18 @@ do \
     ts_addToSuite(pTs, pTc); \
     tt_addToTable(table, pTs); \
 } while (0);
+*/
 
+#define TEST(SUITE, CASE) \
+void test_##SUITE##_##CASE(); \
+static void init_##SUITE##_##CASE() __attribute__((constructor)); \
+static void init_##SUITE##_##CASE() \
+{ \
+    tt_addToTable(#SUITE, #CASE, test_##SUITE##_##CASE); \
+} \
+void test_##SUITE##_##CASE()
 
+/*
 #define EXPECT_INT_EQ(EXPECTED, ACTUAL) \
 do \
 { \
@@ -52,26 +44,31 @@ do \
     exp->caseName = tt_getCurCase(table)->caseName; \
     tt_addToCase(table, exp, runFloatEq);\
 } while(0)
+*/
 
-
-
+#define EXPECT_INT_EQ(EXPECTED, ACTUAL) \
+do \
+{ \
+    if (EXPECTED != ACTUAL) \
+        printf("FAIL\n"); \
+    else \
+        printf("PASS\n"); \
+} while(0)
 
 
 #define INITTEST() \
 do \
 { \
-    table = tt_malloc(); \
-    init(); \
 } while (0)
 
 
 #define RUNTEST() \
 do \
 { \
-    tt_run(table); \
-    tt_free(table); \
+    tt_run(); \
+    tt_free(); \
 } while(0)
 
-*/
+
 
 #endif // MMARCO_H_INCLUDED
