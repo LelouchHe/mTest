@@ -2,8 +2,6 @@
 #define MTEST_H_INCLUDED
 
 #include "mTestTable.h"
-#include "mTestSuite.h"
-#include "mTestCase.h"
 #include "mTestExpect.h"
 #include "mTestResult.h"
 #include "mMarco.h"

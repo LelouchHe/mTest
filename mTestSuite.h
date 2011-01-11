@@ -1,7 +1,6 @@
 #ifndef MTESTSUITE_H_INCLUDED
 #define MTESTSUITE_H_INCLUDED
 
-enum TR_RunState;
 struct TestResultList;
 struct TestSuite;
 

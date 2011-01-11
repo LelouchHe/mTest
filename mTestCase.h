@@ -1,7 +1,6 @@
 #ifndef MTESTCASE_H_INCLUDED
 #define MTESTCASE_H_INCLUDED
 
-enum TR_RunState;
 struct TestCase;
 struct TestResultList;
 
