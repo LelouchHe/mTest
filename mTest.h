@@ -5,6 +5,7 @@
 #include "mTestSuite.h"
 #include "mTestCase.h"
 #include "mTestExpect.h"
+#include "mTestResult.h"
 #include "mMarco.h"
 
 

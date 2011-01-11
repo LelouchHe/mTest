@@ -1,39 +1,125 @@
 #include "mTestExpect.h"
+
 #include <stdio.h>
-#include <math.h>
 #include <stdlib.h>
+#include <math.h>
+#include <stdarg.h>
+
+#include "mTestResult.h"
 
 #define TRUE 1
 #define FALSE 0
 
-//这两个地方的输出,最后是会变的,但是目前还没有到那一步
-//我希望先把TestSuite搞定
-int runIntEq(void* e)
+#define BUFMAX 1024
+
+
+
+struct TestResult* runCase(struct Expect* pExp, void (* cmp)(struct Expect*, struct TestResult*), int fatal, int user, ...)
 {
-    struct ExpectInt* exp = (struct ExpectInt*)e;
-    if (exp->expected == exp->actual)
+    struct TestResult* pTr = tr_malloc();
+    cmp(pExp, pTr);
+    if (fatal == TRUE)
+        pTr->fatal = TRUE;
+    else
+        pTr->fatal = FALSE;
+
+    if (user == TRUE)
     {
-        printf("Expectation %s : PASS\n\n", exp->caseName);
-        return TRUE;
+        char buf[1024];
+        va_list arg;
+        int len;
+        char* fmt;
+        va_start(arg, user);
+        fmt = va_arg(arg, char*);
+        len = vsprintf(buf, fmt, arg);
+        buf[len] = '\0';
+        tr_setMsg(pTr, buf, len);
     }
     else
-    {
-        printf("Expectation %s : FAIL\nExpected = %d\nActual = %d\n\n", exp->caseName, exp->expected, exp->actual);
-        return FALSE;
-    }
+        pTr->msg = NULL;
+
+    return pTr;
 }
 
-int runFloatEq(void* e)
+/*
+int runCase(struct Expect* pExp, int (* cmp)(struct Expect*), void (* output)(struct Expect*, int, va_list), int fatal, int user, ...)
 {
-    struct ExpectFloat* exp = (struct ExpectFloat*)e;
-    if (fabs(exp->expected - exp->actual) <= exp->error)
+    int pass = cmp(pExp);
+    if (pass == TRUE)
     {
-        printf("Expectation %s : PASS\n\n", exp->caseName);
+        HANDLE outputHandle;
+        WORD oldColor;
+        beforePrint(COLOR_GREEN, &outputHandle, &oldColor);
+        printf("\n+----------PASS----------+\n");
+        afterPrint(outputHandle, oldColor);
         return TRUE;
     }
+    else if (fatal == TRUE)
+        abort();
     else
     {
-        printf("Expectation %s : FAIL\nExpected = %f\nActual = %f\n\n", exp->caseName, exp->expected, exp->actual);
+        va_list args;
+        va_start(args, user);
+        output(pExp, user, args);
+        va_end(args);
         return FALSE;
     }
 }
+*/
+
+void cmpIntEq(struct Expect* pExp, struct TestResult* pTr)
+{
+    int expected = *(int *)pExp->expected;
+    int actual = *(int *)pExp->actual;
+
+    tr_setVal(pTr, &expected, &actual, INTEGER, sizeof (int));
+    pTr->pass = (expected == actual);
+}
+
+/*
+void outputInt(struct Expect* pExp, int user, va_list param)
+{
+    HANDLE outputHandle;
+    WORD oldColor;
+    beforePrint(COLOR_RED, &outputHandle, &oldColor);
+
+    int expected = *(int *)pExp->expected;
+    int actual = *(int *)pExp->actual;
+
+    printf("\n+----------FAIL----------+\n");
+    printf(" Expected\t:\t%d\n", expected);
+    printf(" Actual\t\t:\t%d\n", actual);
+    if (user == TRUE)
+    {
+        printf(" User's Info\t: ");
+        char* fmt = va_arg(param, char*);
+        vprintf(fmt, param);
+
+    }
+    afterPrint(outputHandle, oldColor);
+}
+
+
+int cmpFloatEq(struct Expect* pExp)
+{
+    double expected = *(double *)pExp->expected;
+    double actual = *(double *)pExp->actual;
+    double error = *(double *)pExp->extra;
+    return fabs(expected - actual) <= error;
+}
+
+void outputFloat(struct Expect* pExp, int output, va_list param)
+{
+    double expected = *(double *)pExp->expected;
+    double actual = *(double *)pExp->actual;
+    printf("----FAIL----\n");
+    printf("Expected\t:%g\n", expected);
+    printf("Actual\t:\t%g\n", actual);
+    if (output == TRUE)
+    {
+        printf(" ");
+        char* fmt = va_arg(param, char*);
+        vprintf(fmt, param);
+    }
+}
+*/

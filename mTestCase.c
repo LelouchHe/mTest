@@ -3,89 +3,74 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <time.h>
 
-typedef int (* testFunc)(void* exp);
+#include "mTestResult.h"
 
-struct Expect
+
+struct TestCase
 {
-    struct Expect* next;
-    testFunc func;
-    void* exp;
+    struct TestCase* next;
+    int num;
+    const char* caseName;
+
+    void (* func)(struct TestResultList* pTrl);
+    struct TestResultList* pTrl;
+
+    void (* beforeHead)();
+    void (* afterHead)();
+
+
 };
+
 
 struct TestCase* tc_malloc(const char* caseName)
 {
     struct TestCase* pTc = (struct TestCase*)malloc(sizeof (*pTc));
     assert(pTc != NULL);
-    pTc->expHead = NULL;
     pTc->next = NULL;
     pTc->num = 0;
     pTc->caseName = caseName;
+
+    pTc->func = NULL;
+    pTc->pTrl = trl_malloc();
+
+    pTc->beforeHead = NULL;
+    pTc->afterHead = NULL;
     return pTc;
 }
 
 
 void tc_free(struct TestCase* pTc)
 {
-    struct Expect* pExp;
-    while (pTc->expHead != NULL)
-    {
-        pExp = pTc->expHead->next;
-        free(pTc->expHead);
-        pTc->expHead = pExp;
-    }
+    trl_free(pTc->pTrl);
     free(pTc);
     pTc = NULL;
 }
 
-
-void tc_addToCase(struct TestCase* pTc, void* exp, testFunc func)
+int tc_run(struct TestCase* pTc)
 {
-    struct Expect* pExp = (struct Expect*)malloc(sizeof (*pExp));
-    pExp->exp = exp;
-    pExp->func = func;
-    pExp->next = pTc->expHead;
-    pTc->expHead = pExp;
-    pTc->num++;
+    pTc->pTrl->time = clock();
+    pTc->func(pTc->pTrl);
+    pTc->pTrl->time = clock() - pTc->pTrl->time;
+    return trl_isFatal(pTc->pTrl);
 }
 
-void tc_run(struct TestCase* pTc)
-{
-/*
-    struct Expect* pExp = pTc->expHead;
-    while (pExp != NULL)
-    {
-        pExp->func(pExp->exp);
-        pExp = pExp->next;
-    }
-*/
-    pTc->func();
-}
-
-void tc_merge(struct TestCase* pTo, struct TestCase* pFrom)
-{
-    struct Expect* pExp = pFrom->expHead;
-    while (pExp != NULL && pExp->next != NULL)
-        pExp = pExp->next;
-
-    if (pExp == NULL)
-        tc_free(pFrom);
-    else
-    {
-        pExp->next = pTo->expHead;
-        pTo->expHead = pFrom->expHead;
-        pTo->num += pFrom->num;
-        free(pFrom);
-        pFrom = NULL;
-    }
-}
-
-int tc_isSameCase(struct TestCase* pA, struct TestCase* pB)
-{
-    return !strcmp(pA->caseName, pB->caseName);
-}
-
-void tc_addExpFunc(struct TestCase* pTc, void (* func)())
+void tc_addExpFunc(struct TestCase* pTc, void (* func)(struct TestResultList*))
 {
     pTc->func = func;
 }
+
+struct TestCase* tc_getNextCase(struct TestCase* pTc)
+{
+    return pTc->next;
+}
+void tc_setNextCase(struct TestCase* pTc, struct TestCase* pNext)
+{
+    pTc->next = pNext;
+}
+
+struct TestResultList* tc_getResultList(struct TestCase* pTc)
+{
+    return pTc->pTrl;
+};

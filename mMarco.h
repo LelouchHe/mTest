@@ -15,13 +15,13 @@ do \
 */
 
 #define TEST(SUITE, CASE) \
-void test_##SUITE##_##CASE(); \
+void test_##SUITE##_##CASE(struct TestResultList* pTr); \
 static void init_##SUITE##_##CASE() __attribute__((constructor)); \
 static void init_##SUITE##_##CASE() \
 { \
     tt_addToTable(#SUITE, #CASE, test_##SUITE##_##CASE); \
 } \
-void test_##SUITE##_##CASE()
+void test_##SUITE##_##CASE(struct TestResultList* pTrl)
 
 /*
 #define EXPECT_INT_EQ(EXPECTED, ACTUAL) \
@@ -44,7 +44,7 @@ do \
     exp->caseName = tt_getCurCase(table)->caseName; \
     tt_addToCase(table, exp, runFloatEq);\
 } while(0)
-*/
+
 
 #define EXPECT_INT_EQ(EXPECTED, ACTUAL) \
 do \
@@ -53,6 +53,24 @@ do \
         printf("FAIL\n"); \
     else \
         printf("PASS\n"); \
+} while(0)
+*/
+
+
+
+#define EXPECT_INT_EQ(EXPECTED, ACTUAL, ...) \
+do \
+{ \
+    int expected = EXPECTED; \
+    int actual = ACTUAL; \
+    struct Expect expt; \
+    expt.expected = &expected; \
+    expt.actual = &actual; \
+    int user = 1; \
+    if (!strcmp(#__VA_ARGS__, "")) \
+        user = 0; \
+    struct TestResult* pTr = runCase(&expt, cmpIntEq, 0, user, ##__VA_ARGS__); \
+    trl_add(pTrl, pTr); \
 } while(0)
 
 

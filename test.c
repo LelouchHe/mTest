@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 //to be tested, usually in another file
 /*
@@ -19,19 +20,14 @@ double sub(double a, double b)
 
 TEST(Suite1, Case1)
 {
-    EXPECT_INT_EQ(5, 5);
-}
-
-
-TEST(Suite2, Case2)
-{
-    EXPECT_INT_EQ(4, 5);
+    EXPECT_INT_EQ(4, 5, "this is %s, %d\n", "what", 2);
+    EXPECT_INT_EQ(4, 4);
 }
 
 
 int main()
 {
-    INITTEST();
+
 
     RUNTEST();
     return 0;

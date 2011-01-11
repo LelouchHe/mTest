@@ -2,38 +2,51 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "mTestCase.h"
+
+#define TRUE 1
+#define FALSE 0
+
+struct TestSuite
+{
+    struct TestCase* tcHead;
+    struct TestCase* tcTail;
+    struct TestCase* curCase;
+    struct TestSuite* next;
+    int num;
+    const char* suiteName;
+
+    void (* beforeHead)();
+    void (* afterHead)();
+};
 
 
 static void ts_s_addToSuite(struct TestSuite* pTs, struct TestCase* pTc)
 {
-    struct TestCase* pTCase;
-    for (pTCase = pTs->tcHead; pTCase != NULL && !tc_isSameCase(pTCase, pTc); pTCase = pTCase->next)
-        ;
-    if (pTCase == NULL)
+    if (pTs->tcHead == NULL)
     {
-        pTc->next = pTs->tcHead;
-        pTs->tcHead = pTc;
-        pTs->num++;
-        pTs->curCase = pTc;
+        pTs->tcHead = pTs->tcTail = pTc;
     }
     else
     {
-        tc_merge(pTCase, pTc);
-        pTc = NULL;
-        pTs->curCase = pTCase;
+        tc_setNextCase(pTs->tcTail, pTc);
     }
+    pTs->num++;
+    pTs->curCase = pTc;
+    pTs->tcTail = pTc;
 }
 
 
 struct TestSuite* ts_malloc(const char* suiteName)
 {
     struct TestSuite* pTs = (struct TestSuite*)malloc(sizeof (*pTs));
-    pTs->tcHead = NULL;
+    pTs->tcHead = pTs->tcTail = pTs->curCase = NULL;
     pTs->next = NULL;
     pTs->num = 0;
     pTs->suiteName = suiteName;
+    pTs->beforeHead = pTs->afterHead = NULL;
     return pTs;
 };
 
@@ -44,7 +57,7 @@ void ts_free(struct TestSuite* pTs)
     struct TestCase* pTc;
     while (pTs->tcHead != NULL)
     {
-        pTc = pTs->tcHead->next;
+        pTc = tc_getNextCase(pTs->tcHead);
         tc_free(pTs->tcHead);
         pTs->tcHead = pTc;
     }
@@ -52,18 +65,26 @@ void ts_free(struct TestSuite* pTs)
     pTs = NULL;
 }
 
-void ts_addToSuite(struct TestSuite* pTs, const char* caseName, void (* func)())
+void ts_addToSuite(struct TestSuite* pTs, const char* caseName, void (* func)(struct TestResultList*))
 {
     struct TestCase* pTc = tc_malloc(caseName);
     tc_addExpFunc(pTc, func);
     ts_s_addToSuite(pTs, pTc);
 }
 
-void ts_run(struct TestSuite* pTs)
+int ts_run(struct TestSuite* pTs)
 {
     struct TestCase* pTc;
-    for (pTc = pTs->tcHead; pTc != NULL; pTc = pTc->next)
-        tc_run(pTc);
+    for (pTc = pTs->tcHead; pTc != NULL; pTc = tc_getNextCase(pTc))
+    {
+        if (tc_run(pTc) == TRUE)
+            break;
+    }
+
+    if (pTc == NULL)
+        return FALSE;
+    else
+        return TRUE;
 }
 
 void ts_merge(struct TestSuite* pTo, struct TestSuite* pFrom)
@@ -71,7 +92,7 @@ void ts_merge(struct TestSuite* pTo, struct TestSuite* pFrom)
     struct TestCase* pTc = pFrom->tcHead;
     while (pFrom->tcHead != NULL)
     {
-        pTc = pFrom->tcHead->next;
+        pTc = tc_getNextCase(pFrom->tcHead);
         ts_s_addToSuite(pTo, pFrom->tcHead);
         pFrom->tcHead = pTc;
     }
@@ -84,17 +105,14 @@ int ts_isSameSuite(struct TestSuite* pA, struct TestSuite* pB)
     return !strcmp(pA->suiteName, pB->suiteName);
 }
 
-void ts_addToCase(struct TestSuite* pTs, void* exp, int(*func)(void*))
+
+
+struct TestSuite* ts_getNextSuite(struct TestSuite* pTs)
 {
-    tc_addToCase(pTs->curCase, exp, func);
+    return pTs->next;
 }
 
-struct TestCase* ts_getCurCase(struct TestSuite* pTs)
+void ts_setNextSuite(struct TestSuite* pTs, struct TestSuite* pNext)
 {
-    return pTs->curCase;
-}
-
-void ts_addExpFunc(struct TestSuite* pTs, void (* func)())
-{
-    pTs->curCase->func = func;
+    pTs->next = pNext;
 }

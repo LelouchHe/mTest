@@ -1,22 +1,19 @@
 #ifndef MTESTEXPECT_H_INCLUDED
 #define MTESTEXPECT_H_INCLUDED
 
+struct TestResult;
 
-int runIntEq(void* e);
-struct ExpectInt
+struct Expect
 {
-    int expected;
-    int actual;
-    const char* caseName;
+    void* expected;
+    void* actual;
+    void* extra;
 };
 
-int runFloatEq(void* e);
-struct ExpectFloat
-{
-    double expected;
-    double actual;
-    double error;
-    const char* caseName;
-};
+struct TestResult* runCase(struct Expect* pExp, void (* cmp)(struct Expect*, struct TestResult*), int fatal, int user, ...);
+
+void cmpIntEq(struct Expect* pExp, struct TestResult* pTr);
+
+int cmpFloatEq(struct Expect* pExp, struct TestResult* pTr);
 
 #endif // MTESTEXPECT_H_INCLUDED
