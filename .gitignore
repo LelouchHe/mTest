@@ -3,3 +3,5 @@ obj/
 unittest.*
 test.i
 .*.swp
+*.a
+*.out
