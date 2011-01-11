@@ -17,13 +17,11 @@ struct TestCase
     int num;
     const char* caseName;
 
-    void (* func)(struct TestResultList* pTrl);
+    void (* func)(struct TestResultList* pTrl, struct TestContext*);
     struct TestResultList* pTrl;
 
-    void (* beforeHead)();
-    void (* afterHead)();
-
-
+    void (* before)();
+    void (* after)();
 };
 
 
@@ -38,8 +36,8 @@ struct TestCase* tc_malloc(const char* caseName)
     pTc->func = NULL;
     pTc->pTrl = trl_malloc();
 
-    pTc->beforeHead = NULL;
-    pTc->afterHead = NULL;
+    pTc->before = NULL;
+    pTc->after = NULL;
     return pTc;
 }
 
@@ -51,15 +49,15 @@ void tc_free(struct TestCase* pTc)
     pTc = NULL;
 }
 
-int tc_run(struct TestCase* pTc)
+int tc_run(struct TestCase* pTc, struct TestContext* pTct)
 {
     pTc->pTrl->time = clock();
-    pTc->func(pTc->pTrl);
+    pTc->func(pTc->pTrl, pTct);
     pTc->pTrl->time = clock() - pTc->pTrl->time;
     return tc_runState(pTc);
 }
 
-void tc_addExpFunc(struct TestCase* pTc, void (* func)(struct TestResultList*))
+void tc_addExpFunc(struct TestCase* pTc, void (* func)(struct TestResultList*, struct TestContext*))
 {
     pTc->func = func;
 }

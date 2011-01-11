@@ -4,6 +4,7 @@
 
 #include "mTestSuite.h"
 #include "mTestPrinter.h"
+#include "mTestContext.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -22,8 +23,8 @@ struct TestTable
     int passNum;
     int runState;
 
-    void (* beforeHead)();
-    void (* afterHead)();
+    void (* before)();
+    void (* after)();
 };
 
 static struct TestTable* table;
@@ -34,7 +35,7 @@ static struct TestTable* tt_s_malloc()
     pTt->tsHead = pTt->curSuite = NULL;
     pTt->num = pTt->passNum = 0;
 
-    pTt->beforeHead = pTt->afterHead = NULL;
+    pTt->before = pTt->after = NULL;
     return pTt;
 }
 
@@ -85,7 +86,7 @@ void tt_free()
     table = NULL;
 }
 
-void tt_addToTable(const char* suiteName, const char* caseName, void (*func)(struct TestResultList*))
+void tt_addToTable(const char* suiteName, const char* caseName, void (*func)(struct TestResultList*, struct TestContext*))
 {
     struct TestSuite* pTs = ts_malloc(suiteName);
     ts_addToSuite(pTs, caseName, func);
@@ -96,11 +97,17 @@ void tt_addToTable(const char* suiteName, const char* caseName, void (*func)(str
 void tt_run()
 {
     struct TestSuite* pTs;
+    struct TestContext context;
+
     int result = PASS;
     tt_getTable()->runState = FAIL;
+
+    if (tt_getTable()->before != NULL)
+        tt_getTable()->before();
     for (pTs = tt_getTable()->tsHead; pTs != NULL; pTs = ts_getNextSuite(pTs))
     {
-        result = ts_run(pTs);
+        context.pTs = pTs;
+        result = ts_run(pTs, &context);
         if (result == PASS)
             tt_getTable()->passNum++;
         if (result == ERROR)
@@ -109,6 +116,9 @@ void tt_run()
             break;
         }
     }
+    if (tt_getTable()->after != NULL)
+        tt_getTable()->after();
+
     if (result != ERROR && tt_getTable()->num == tt_getTable()->passNum)
         tt_getTable()->runState = PASS;
 }
@@ -141,5 +151,43 @@ void tt_getCaseStatus(int* caseNum, int* casePassNum)
         *caseNum += num;
         *casePassNum += passNum;
     }
+}
+
+void tt_addBeforeAll(void (* func)())
+{
+    tt_getTable()->before = func;
+}
+
+void tt_addBeforeSuite(const char* suiteName, void (* func)())
+{
+    struct TestSuite* pTs;
+    for (pTs = tt_getTable()->tsHead; pTs != NULL && !ts_isSuiteName(pTs, suiteName); pTs = ts_getNextSuite(pTs))
+        ;
+    if (pTs != NULL)
+        ts_addBeforeSuite(pTs, func);
+}
+
+void tt_addBeforeCase(const char* suiteName, const char* caseName, void (* func)())
+{
+
+}
+
+void tt_addAfterAll(void (* func)())
+{
+    tt_getTable()->after = func;
+}
+
+void tt_addAfterSuite(const char* suiteName, void (* func)())
+{
+    struct TestSuite* pTs;
+    for (pTs = tt_getTable()->tsHead; pTs != NULL && !ts_isSuiteName(pTs, suiteName); pTs = ts_getNextSuite(pTs))
+        ;
+    if (pTs != NULL)
+        ts_addAfterSuite(pTs, func);
+}
+
+void tt_addAfterCase(const char* suiteName, const char* caseName, void (* func)())
+{
+
 }
 

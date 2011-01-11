@@ -6,6 +6,7 @@
 
 #include "mTestCase.h"
 #include "mTestPrinter.h"
+#include "mTestContext.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -25,8 +26,8 @@ struct TestSuite
     int runState;
     const char* suiteName;
 
-    void (* beforeHead)();
-    void (* afterHead)();
+    void (* before)();
+    void (* after)();
 };
 
 
@@ -53,7 +54,7 @@ struct TestSuite* ts_malloc(const char* suiteName)
     pTs->next = NULL;
     pTs->num = 0;
     pTs->suiteName = suiteName;
-    pTs->beforeHead = pTs->afterHead = NULL;
+    pTs->before = pTs->after = NULL;
     return pTs;
 };
 
@@ -72,21 +73,25 @@ void ts_free(struct TestSuite* pTs)
     pTs = NULL;
 }
 
-void ts_addToSuite(struct TestSuite* pTs, const char* caseName, void (* func)(struct TestResultList*))
+void ts_addToSuite(struct TestSuite* pTs, const char* caseName, void (* func)(struct TestResultList*, struct TestContext*))
 {
     struct TestCase* pTc = tc_malloc(caseName);
     tc_addExpFunc(pTc, func);
     ts_s_addToSuite(pTs, pTc);
 }
 
-int ts_run(struct TestSuite* pTs)
+int ts_run(struct TestSuite* pTs, struct TestContext* pTct)
 {
     struct TestCase* pTc;
     int result = PASS;
     pTs->runState = FAIL;
+
+    if (pTs->before != NULL)
+        pTs->before();
     for (pTc = pTs->tcHead; pTc != NULL; pTc = tc_getNextCase(pTc))
     {
-        result = tc_run(pTc);
+        pTct->pTc = pTc;
+        result = tc_run(pTc, pTct);
         if (result == PASS)
             pTs->passNum++;
         else if (result == ERROR)
@@ -95,6 +100,9 @@ int ts_run(struct TestSuite* pTs)
             break;
         }
     }
+    if (pTs->after != NULL)
+        pTs->after();
+
     if (result != ERROR && pTs->num == pTs->passNum)
         pTs->runState = PASS;
     return result;
@@ -148,4 +156,19 @@ void ts_getCaseStatus(struct TestSuite* pTs, int* caseNum, int* casePassNum)
 {
     *caseNum = pTs->num;
     *casePassNum = pTs->passNum;
+}
+
+int ts_isSuiteName(struct TestSuite* pTs, const char* suiteName)
+{
+    return !strcmp(pTs->suiteName, suiteName);
+}
+
+void ts_addBeforeSuite(struct TestSuite* pTs, void (*func)())
+{
+    pTs->before = func;
+}
+
+void ts_addAfterSuite(struct TestSuite* pTs, void (*func)())
+{
+    pTs->after = func;
 }

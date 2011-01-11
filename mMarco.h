@@ -15,13 +15,13 @@ do \
 */
 
 #define TEST(SUITE, CASE) \
-void test_##SUITE##_##CASE(struct TestResultList* pTr); \
-static void init_##SUITE##_##CASE() __attribute__((constructor)); \
+void test_##SUITE##_##CASE(struct TestResultList* pTr, struct TestContext* pTct); \
+static void init_##SUITE##_##CASE() __attribute__((constructor(200))); \
 static void init_##SUITE##_##CASE() \
 { \
     tt_addToTable(#SUITE, #CASE, test_##SUITE##_##CASE); \
 } \
-void test_##SUITE##_##CASE(struct TestResultList* pTrl)
+void test_##SUITE##_##CASE(struct TestResultList* pTrl, struct TestContext* pTct)
 
 /*
 #define EXPECT_INT_EQ(EXPECTED, ACTUAL) \
@@ -136,6 +136,32 @@ do \
     trl_add(pTrl, pTr); \
 } while(0)
 
+#define BEFORE_ALL() \
+void before_all(); \
+static void add_before_all() __attribute__((constructor)); \
+static void add_before_all() \
+{ \
+    tt_addBeforeAll(before_all); \
+} \
+void before_all()
+
+#define AFTER_ALL() \
+void after_all(); \
+static void add_after_all() __attribute__((constructor)); \
+static void add_after_all() \
+{ \
+    tt_addAfterAll(after_all); \
+} \
+void after_all()
+
+#define BEFORE_SUITE(SUITE) \
+void before_##SUITE(); \
+static void add_before_##SUITE() __attribute__((constructor)); \
+static void add_before_##SUITE() \
+{ \
+    tt_addBeforeSuite(#SUITE, before_##SUITE); \
+} \
+void before_##SUITE()
 
 #define INITTEST() \
 do \
