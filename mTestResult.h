@@ -5,7 +5,7 @@
 
 enum TR_ParamType
 {
-    INTEGER, DOUBLE, STRING
+    INTEGER_TYPE, FLOAT_TYPE, STRING_TYPE
 };
 
 struct TestResult
@@ -26,6 +26,7 @@ struct TestResultList
     struct TestResult* trHead;
     struct TestResult* trTail;
     int num;
+    int runState;
     clock_t time;
 };
 
@@ -39,5 +40,6 @@ struct TestResult* tr_malloc();
 
 void tr_setVal(struct TestResult* pTr, void* expected, void* actual, enum TR_ParamType type, size_t size);
 void tr_setMsg(struct TestResult* pTr, char* msg, size_t len);
+int tr_isFatal(struct TestResult* pTr);
 
 #endif // MTESTRESULT_H_INCLUDED

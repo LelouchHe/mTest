@@ -6,6 +6,10 @@
 #define TRUE 1
 #define FALSE 0
 
+#define PASS 1
+#define FAIL 0
+#define ERROR -1
+
 static void tr_s_free(struct TestResult* pTr)
 {
     free(pTr->expected);
@@ -19,6 +23,7 @@ struct TestResultList* trl_malloc()
     pTrl->trHead = pTrl->trTail = NULL;
     pTrl->num = 0;
     pTrl->time = 0;
+    pTrl->runState = PASS;
     return pTrl;
 }
 
@@ -32,6 +37,13 @@ void trl_add(struct TestResultList* pTrl, struct TestResult* pTr)
     }
     pTrl->num++;
     pTrl->trTail = pTr;
+    if (pTr->pass == FALSE)
+    {
+        if (pTr->fatal == TRUE)
+            pTrl->runState = ERROR;
+        else
+            pTrl->runState = FAIL;
+    }
 }
 void trl_free(struct TestResultList* pTrl)
 {
@@ -47,19 +59,6 @@ void trl_free(struct TestResultList* pTrl)
     pTrl = NULL;
 }
 
-int trl_isFatal(struct TestResultList* pTrl)
-{
-    struct TestResult* pTr;
-    for (pTr = pTrl->trHead; pTr != NULL; pTr = pTr->next)
-    {
-        if (pTr->pass == FALSE && pTr->fatal == TRUE)
-            break;
-    }
-    if (pTr == NULL)
-        return FALSE;
-    else
-        return TRUE;
-}
 
 struct TestResult* tr_malloc()
 {
@@ -84,4 +83,9 @@ void tr_setMsg(struct TestResult* pTr, char* msg, size_t len)
 {
     pTr->msg = (char*)malloc(len + 1);
     memcpy(pTr->msg, msg, len + 1);
+}
+
+int tr_isFatal(struct TestResult* pTr)
+{
+    return (pTr->pass == FALSE) && (pTr->fatal == TRUE);
 }

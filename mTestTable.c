@@ -3,9 +3,15 @@
 #include <stdlib.h>
 
 #include "mTestSuite.h"
+#include "mTestPrinter.h"
 
 #define TRUE 1
 #define FALSE 0
+
+#define PASS 1
+#define FAIL 0
+#define ERROR -1
+
 
 struct TestTable
 {
@@ -13,6 +19,8 @@ struct TestTable
     struct TestSuite* tsTail;
     struct TestSuite* curSuite;
     int num;
+    int passNum;
+    int runState;
 
     void (* beforeHead)();
     void (* afterHead)();
@@ -23,8 +31,8 @@ static struct TestTable* table;
 static struct TestTable* tt_s_malloc()
 {
     struct TestTable* pTt = (struct TestTable*)malloc(sizeof (*pTt));
-    pTt->tsHead = pTt->tsTail = pTt->curSuite = NULL;
-    pTt->num = 0;
+    pTt->tsHead = pTt->curSuite = NULL;
+    pTt->num = pTt->passNum = 0;
 
     pTt->beforeHead = pTt->afterHead = NULL;
     return pTt;
@@ -38,14 +46,14 @@ static void tt_s_addToTable(struct TestSuite* pTs)
     if (pTSuite == NULL)
     {
         if (tt_getTable()->tsHead == NULL)
-            tt_getTable()->tsHead = tt_getTable()->tsTail = pTs;
+            tt_getTable()->tsHead  = pTs;
         else
         {
-            ts_setNextSuite(tt_getTable()->tsTail, pTs);
+            ts_setNextSuite(pTs, tt_getTable()->tsHead);
+            tt_getTable()->tsHead = pTs;
         }
         tt_getTable()->num++;
         tt_getTable()->curSuite = pTs;
-        tt_getTable()->tsTail = pTs;
     }
     else
     {
@@ -88,10 +96,50 @@ void tt_addToTable(const char* suiteName, const char* caseName, void (*func)(str
 void tt_run()
 {
     struct TestSuite* pTs;
+    int result = PASS;
+    tt_getTable()->runState = FAIL;
     for (pTs = tt_getTable()->tsHead; pTs != NULL; pTs = ts_getNextSuite(pTs))
     {
-        if (ts_run(pTs) == TRUE)
+        result = ts_run(pTs);
+        if (result == PASS)
+            tt_getTable()->passNum++;
+        if (result == ERROR)
+        {
+            tt_getTable()->runState = ERROR;
             break;
+        }
+    }
+    if (result != ERROR && tt_getTable()->num == tt_getTable()->passNum)
+        tt_getTable()->runState = PASS;
+}
+
+void tt_print()
+{
+    tp_printTitle(ALL, "this is test");
+    struct TestSuite* pTs;
+    for (pTs = tt_getTable()->tsHead; pTs != NULL; pTs = ts_getNextSuite(pTs))
+    {
+        if (ts_print(pTs) == TRUE)
+            break;
+    }
+    tp_printStatics();
+}
+
+void tt_getSuiteStatus(int* suiteNum, int* suitePassNum)
+{
+    *suiteNum = tt_getTable()->num;
+    *suitePassNum = tt_getTable()->passNum;
+}
+void tt_getCaseStatus(int* caseNum, int* casePassNum)
+{
+    struct TestSuite* pTs;
+    *caseNum = *casePassNum = 0;
+    for (pTs = tt_getTable()->tsHead; pTs != NULL; pTs = ts_getNextSuite(pTs))
+    {
+        int num, passNum;
+        ts_getCaseStatus(pTs, &num, &passNum);
+        *caseNum += num;
+        *casePassNum += passNum;
     }
 }
 

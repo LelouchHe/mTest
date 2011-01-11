@@ -56,20 +56,83 @@ do \
 } while(0)
 */
 
-
+#define MAKE_INT_TEST(EXPECTED, ACTUAL, ...) \
+int expected = EXPECTED; \
+int actual = ACTUAL; \
+struct Expect expt; \
+expt.expected = &expected; \
+expt.actual = &actual; \
+int user = 1; \
+if (!strcmp(#__VA_ARGS__, "")) \
+    user = 0; \
 
 #define EXPECT_INT_EQ(EXPECTED, ACTUAL, ...) \
 do \
 { \
-    int expected = EXPECTED; \
-    int actual = ACTUAL; \
-    struct Expect expt; \
-    expt.expected = &expected; \
-    expt.actual = &actual; \
-    int user = 1; \
-    if (!strcmp(#__VA_ARGS__, "")) \
-        user = 0; \
+    MAKE_INT_TEST(EXPECTED, ACTUAL, ##__VA_ARGS__)\
     struct TestResult* pTr = runCase(&expt, cmpIntEq, 0, user, ##__VA_ARGS__); \
+    trl_add(pTrl, pTr); \
+} while(0)
+
+#define ASSERT_INT_EQ(EXPECTED, ACTUAL, ...) \
+do \
+{ \
+    MAKE_INT_TEST(EXPECTED, ACTUAL, ##__VA_ARGS__)\
+    struct TestResult* pTr = runCase(&expt, cmpIntEq, 1, user, ##__VA_ARGS__); \
+    trl_add(pTrl, pTr); \
+} while(0)
+
+#define MAKE_FLOAT_TEST(EXPECTED, ACTUAL, ERROR, ...) \
+double expected = EXPECTED; \
+double actual = ACTUAL; \
+double error = ERROR; \
+struct Expect expt; \
+expt.expected = &expected; \
+expt.actual = &actual; \
+expt.extra = &error; \
+int user = 1; \
+if (!strcmp(#__VA_ARGS__, "")) \
+    user = 0; \
+
+#define EXPECT_FLOAT_EQ(EXPECTED, ACTUAL, ERROR, ...) \
+do \
+{ \
+    MAKE_FLOAT_TEST(EXPECTED, ACTUAL, ERROR, ##__VA_ARGS__) \
+    struct TestResult* pTr = runCase(&expt, cmpFloatEq, 0, user, ##__VA_ARGS__); \
+    trl_add(pTrl, pTr); \
+} while (0)
+
+#define ASSERT_FLOAT_EQ(EXPECTED, ACTUAL, ERROR, ...) \
+do \
+{ \
+    MAKE_FLOAT_TEST(EXPECTED, ACTUAL, ERROR, ##__VA_ARGS__) \
+    struct TestResult* pTr = runCase(&expt, cmpFloatEq, 1, user, ##__VA_ARGS__); \
+    trl_add(pTrl, pTr); \
+} while (0)
+
+#define MAKE_STR_TEST(EXPECTED, ACTUAL, ...) \
+char* expected = EXPECTED; \
+char* actual = ACTUAL; \
+struct Expect expt; \
+expt.expected = expected; \
+expt.actual = actual; \
+int user = 1; \
+if (!strcmp(#__VA_ARGS__, "")) \
+    user = 0; \
+
+#define EXPECT_STR_EQ(EXPECTED, ACTUAL, ...) \
+do \
+{ \
+    MAKE_STR_TEST(EXPECTED, ACTUAL, ##__VA_ARGS__)\
+    struct TestResult* pTr = runCase(&expt, cmpStrEq, 0, user, ##__VA_ARGS__); \
+    trl_add(pTrl, pTr); \
+} while(0)
+
+#define ASSERT_STR_EQ(EXPECTED, ACTUAL, ...) \
+do \
+{ \
+    MAKE_STR_TEST(EXPECTED, ACTUAL, ##__VA_ARGS__)\
+    struct TestResult* pTr = runCase(&expt, cmpStrEq, 1, user, ##__VA_ARGS__); \
     trl_add(pTrl, pTr); \
 } while(0)
 
@@ -84,6 +147,7 @@ do \
 do \
 { \
     tt_run(); \
+    tt_print(); \
     tt_free(); \
 } while(0)
 

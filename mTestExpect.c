@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "mTestResult.h"
 
@@ -72,8 +73,30 @@ void cmpIntEq(struct Expect* pExp, struct TestResult* pTr)
     int expected = *(int *)pExp->expected;
     int actual = *(int *)pExp->actual;
 
-    tr_setVal(pTr, &expected, &actual, INTEGER, sizeof (int));
+    tr_setVal(pTr, &expected, &actual, INTEGER_TYPE, sizeof (int));
     pTr->pass = (expected == actual);
+}
+
+void cmpFloatEq(struct Expect* pExp, struct TestResult* pTr)
+{
+    double expected = *(double *)pExp->expected;
+    double actual = *(double *)pExp->actual;
+    double error = *(double *)pExp->extra;
+    tr_setVal(pTr, &expected, &actual, FLOAT_TYPE, sizeof (double));
+    pTr->pass = (fabs(expected - actual) <= error);
+}
+
+static size_t max(size_t a, size_t b)
+{
+    return a > b ? a : b;
+}
+
+void cmpStrEq(struct Expect* pExp, struct TestResult* pTr)
+{
+    char* expected = (char *)pExp->expected;
+    char* actual = (char *)pExp->actual;
+    tr_setVal(pTr, expected, actual, STRING_TYPE, max(strlen(expected), strlen(actual)) + 1);
+    pTr->pass = !strcmp(expected, actual);
 }
 
 /*

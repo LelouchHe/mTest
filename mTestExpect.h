@@ -14,6 +14,8 @@ struct TestResult* runCase(struct Expect* pExp, void (* cmp)(struct Expect*, str
 
 void cmpIntEq(struct Expect* pExp, struct TestResult* pTr);
 
-int cmpFloatEq(struct Expect* pExp, struct TestResult* pTr);
+void cmpFloatEq(struct Expect* pExp, struct TestResult* pTr);
+
+void cmpStrEq(struct Expect* pExp, struct TestResult* pTr);
 
 #endif // MTESTEXPECT_H_INCLUDED
